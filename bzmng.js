@@ -39,7 +39,14 @@ function manager(z){
 function viewProducts (z) {
     connection.query('SELECT * FROM products', function(err, res){
         if (err) throw err;
-        console.log(res)
+        for (var i = 0; i < res.length; i++) {
+            console.log('Item #: ' + res[i].item_id);
+            console.log('Item: ' + res[i].product_name);
+            console.log('Department: ' + res[i].department_name);
+            console.log('Price: $' + res[i].price);
+            console.log('Stock Remaining: ' + res[i].stock_quantitiy)
+            console.log('-----------------------------')
+        }
         manager()
     });
 }
@@ -47,7 +54,14 @@ function viewProducts (z) {
 function viewStock (z) {
     connection.query('SELECT * FROM products WHERE stock_quantitiy BETWEEN 0 and 10', function(err, res){
         if (err) throw err;
-        console.log(res)
+        for (var i = 0; i < res.length; i++) {
+            console.log('Item #: ' + res[i].item_id);
+            console.log('Item: ' + res[i].product_name);
+            console.log('Department: ' + res[i].department_name);
+            console.log('Price: $' + res[i].price);
+            console.log('Stock Remaining: ' + res[i].stock_quantitiy)
+            console.log('-----------------------------')
+        }
         manager()
     })
 }
@@ -64,18 +78,20 @@ function updateStock (z) {
         }
     ]).then(function(res){
         var product = res.product;
-        var stock = res.stock;
-        var current_stock = 0
+        var newStock = parseInt(res.stock);
         connection.query('SELECT stock_quantitiy FROM products WHERE product_name=?', [product], function(err,res){
             if (err) throw err;
-            var current_stock = res
-        })
-        stock += current_stock
-        connection.query('UPDATE products SET ? WHERE ?', [{stock_quantitiy: stock}, {
+            var current_stock = parseInt(res[0].stock_quantitiy)
+            current_stock += newStock
+            connection.query('UPDATE products SET ? WHERE ?', [{stock_quantitiy: current_stock}, {
             product_name: product}], function(err, res){
                 if (err) throw err;
-                console.log("Stock Updated!")
-                manager()
+                connection.query('Select * FROM products WHERE product_name=?', [product], function(err, res){
+                    if (err) throw err;
+                    console.log(res[0].product_name + ' stock has been updated. Current Stock: ' + res[0].stock_quantitiy)
+                    manager()
+                })
+             })
         })
     })
 }
